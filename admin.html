@@ -8,45 +8,208 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            font-family: Arial, Helvetica, sans-serif;
-            background: #f3f8f5;
-            color: #111c17;
-            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f4f9;
+            color: #1e293b;
+            min-height: 100vh;
         }
-        .container { max-width: 1400px; margin: 0 auto; }
         
-        /* HEADER */
-        .header {
+        /* TOP BAR */
+        .topbar {
             background: #07543f;
             color: white;
-            padding: 20px;
+            padding: 16px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .topbar .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .topbar .logo img {
+            width: 48px;
+            height: 48px;
+            object-fit: contain;
+            border-radius: 8px;
+            background: white;
+        }
+        .topbar .logo h1 {
+            font-size: 20px;
+            font-weight: 700;
+        }
+        .topbar .logo span {
+            font-size: 13px;
+            opacity: 0.8;
+            display: block;
+        }
+        .topbar .nav-links {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        .topbar .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 18px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .topbar .nav-links a:hover {
+            background: rgba(255,255,255,0.15);
+        }
+        .topbar .nav-links .btn-outline {
+            border: 1.5px solid rgba(255,255,255,0.3);
+        }
+        .topbar .nav-links .btn-outline:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        .topbar .nav-links .btn-gold {
+            background: #c79a22;
+            color: white;
+        }
+        .topbar .nav-links .btn-gold:hover {
+            background: #b38a1e;
+        }
+        
+        /* LOGIN SCREEN */
+        .login-screen {
+            min-height: calc(100vh - 80px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+        .login-card {
+            background: white;
+            border-radius: 16px;
+            padding: 48px 40px;
+            max-width: 420px;
+            width: 100%;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.08);
+            border: 1px solid #e9edf2;
+        }
+        .login-card .login-logo {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .login-card .login-logo img {
+            width: 72px;
+            height: 72px;
+            object-fit: contain;
             border-radius: 12px;
+            background: #f1f5f9;
+            padding: 8px;
+        }
+        .login-card h2 {
+            font-size: 24px;
+            color: #07543f;
+            margin-bottom: 6px;
+            text-align: center;
+        }
+        .login-card .subtitle {
+            text-align: center;
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 28px;
+            line-height: 1.6;
+        }
+        .login-card .subtitle strong {
+            color: #07543f;
+        }
+        .login-card label {
+            display: block;
+            font-weight: 600;
+            font-size: 13px;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+        .login-card input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #d1d9e6;
+            border-radius: 10px;
+            font-size: 15px;
+            margin-bottom: 16px;
+            transition: all 0.2s;
+            background: #fafcff;
+        }
+        .login-card input:focus {
+            outline: none;
+            border-color: #07543f;
+            box-shadow: 0 0 0 3px rgba(7, 84, 63, 0.12);
+        }
+        .login-card .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #07543f;
+            color: white;
+        }
+        .login-card .btn:hover {
+            background: #0a6b52;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(7, 84, 63, 0.3);
+        }
+        .login-card .hint {
+            font-size: 12px;
+            color: #94a3b8;
+            text-align: center;
+            margin-top: 14px;
+        }
+        .login-error {
+            color: #ef4444;
+            font-size: 14px;
+            text-align: center;
+            margin-top: 10px;
+            display: none;
+        }
+        
+        /* DASHBOARD (hidden until login) */
+        .dashboard {
+            display: none;
+            padding: 20px 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .dashboard .header {
+            background: white;
+            border-radius: 12px;
+            padding: 20px 24px;
             margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            border: 1px solid #e9edf2;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
             gap: 10px;
         }
-        .header .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
+        .dashboard .header h2 {
+            color: #07543f;
+            font-size: 20px;
         }
-        .header .brand img {
-            width: 50px;
-            height: 50px;
-            object-fit: contain;
-            border-radius: 8px;
-            background: white;
+        .dashboard .header .status {
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
         }
-        .header .brand h1 { font-size: 22px; }
-        .header .brand span { font-size: 13px; opacity: 0.8; display: block; }
-        .header-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+        .status-online { background: #d1fae5; color: #0b5e42; }
+        .status-offline { background: #fee2e2; color: #991b1b; }
         
-        /* BUTTONS */
-        .btn {
-            padding: 8px 16px;
+        .dashboard .btn {
+            padding: 8px 18px;
             border: none;
             border-radius: 8px;
             cursor: pointer;
@@ -58,29 +221,27 @@
             align-items: center;
             gap: 6px;
         }
-        .btn:hover { transform: translateY(-1px); opacity: 0.9; }
-        .btn-primary { background: #0d7b5d; color: white; }
+        .btn-primary { background: #07543f; color: white; }
+        .btn-primary:hover { background: #0a6b52; }
         .btn-danger { background: #ef4444; color: white; }
-        .btn-warning { background: #f59e0b; color: white; }
+        .btn-danger:hover { background: #dc2626; }
         .btn-secondary { background: #e2e8f0; color: #1e293b; }
+        .btn-secondary:hover { background: #cbd5e1; }
         .btn-success { background: #22c55e; color: white; }
-        .btn-outline { background: transparent; color: white; border: 1.5px solid rgba(255,255,255,0.4); }
-        .btn-outline:hover { background: rgba(255,255,255,0.1); }
-        .btn-sm { padding: 5px 10px; font-size: 12px; }
+        .btn-success:hover { background: #16a34a; }
+        .btn-sm { padding: 5px 12px; font-size: 12px; }
         .btn-xs { padding: 3px 8px; font-size: 11px; }
         
-        /* PANELS */
         .panel {
             background: white;
             border-radius: 12px;
             padding: 20px;
             margin-bottom: 20px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-            border: 1px solid #e2e8f0;
+            border: 1px solid #e9edf2;
         }
-        .panel h2 { color: #07543f; margin-bottom: 16px; font-size: 18px; }
+        .panel h3 { color: #07543f; margin-bottom: 16px; font-size: 17px; }
         
-        /* STATS */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(6, 1fr);
@@ -91,14 +252,12 @@
             background: white;
             padding: 16px;
             border-radius: 10px;
-            border: 1px solid #e2e8f0;
+            border: 1px solid #e9edf2;
             text-align: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
         }
         .stat span { color: #64748b; font-size: 12px; display: block; }
         .stat strong { font-size: 28px; color: #07543f; display: block; margin-top: 4px; }
         
-        /* TABLES */
         .table-wrap { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
         th {
@@ -114,7 +273,6 @@
         td { padding: 10px 12px; border-bottom: 1px solid #eef2f6; vertical-align: middle; }
         tr:hover td { background: #f8fafc; }
         
-        /* BADGES */
         .badge {
             display: inline-block;
             padding: 2px 10px;
@@ -127,10 +285,7 @@
         .badge-declined { background: #fee2e2; color: #991b1b; }
         .badge-taken { background: #dbeafe; color: #1e4f8a; }
         .badge-removed { background: #f1f5f9; color: #475569; }
-        .badge-active { background: #d1fae5; color: #0b5e42; }
-        .badge-suspended { background: #fee2e2; color: #991b1b; }
         
-        /* TABS */
         .tabs {
             display: flex;
             gap: 6px;
@@ -150,51 +305,27 @@
         .tabs .tab:hover { background: #f1f5f9; }
         .tabs .tab.active { background: #07543f; color: white; border-color: #07543f; }
         
-        /* LOGIN */
-        .login-screen {
-            min-height: 80vh;
-            display: grid;
-            place-items: center;
-            padding: 20px;
-        }
-        .login-card {
-            background: white;
-            padding: 40px;
-            border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.08);
-            max-width: 400px;
-            width: 100%;
-            border: 1px solid #e2e8f0;
-        }
-        .login-card h1 { color: #07543f; margin-bottom: 8px; }
-        .login-card p { color: #64748b; margin-bottom: 20px; }
-        .login-card input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            margin-bottom: 12px;
-            font-size: 16px;
-        }
-        .login-card .btn { width: 100%; }
-        .login-error { color: #ef4444; margin-top: 10px; display: none; }
-        
-        /* MISC */
         .hidden { display: none !important; }
         .empty-state { text-align: center; color: #94a3b8; padding: 30px 10px; font-style: italic; }
-        .status-online { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; background: #d1fae5; color: #0b5e42; }
-        .status-offline { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; background: #fee2e2; color: #991b1b; }
         .toast {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            background: #22c55e; color: white; padding: 12px 24px; border-radius: 12px;
-            z-index: 2000; display: none; max-width: 90%; text-align: center;
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #22c55e;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            z-index: 2000;
+            display: none;
+            max-width: 90%;
+            text-align: center;
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
         .toast.error { background: #ef4444; }
         .toast.show { display: block; animation: slideUp 0.3s ease; }
         @keyframes slideUp { from { transform: translate(-50%, 100px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
         
-        /* Modal */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -230,15 +361,16 @@
         .modal-close:hover { color: #1e293b; }
         .modal .form-group { margin-bottom: 12px; }
         .modal .form-group label { display: block; font-weight: 600; margin-bottom: 4px; font-size: 13px; }
-        .modal .form-group input, .modal .form-group select, .modal .form-group textarea {
+        .modal .form-group input, .modal .form-group select {
             width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;
         }
         
         @media (max-width: 768px) {
             .stats-grid { grid-template-columns: repeat(3, 1fr); }
-            .header { flex-direction: column; text-align: center; }
-            .header .brand { flex-direction: column; }
-            .header-actions { justify-content: center; }
+            .topbar { flex-direction: column; text-align: center; padding: 16px; }
+            .topbar .nav-links { justify-content: center; flex-wrap: wrap; }
+            .login-card { padding: 30px 20px; }
+            .dashboard { padding: 12px; }
         }
         @media (max-width: 480px) {
             .stats-grid { grid-template-columns: repeat(2, 1fr); }
@@ -247,86 +379,90 @@
 </head>
 <body>
 
-<div class="container" id="app">
+<!-- TOP BAR -->
+<div class="topbar">
+    <div class="logo">
+        <img src="alexandra-logo.png" alt="Vusani Ikhaya Properties">
+        <div>
+            <h1>VUSANI IKHAYA PROPERTIES</h1>
+            <span>Trusted rooms. Real people. Real value.</span>
+        </div>
+    </div>
+    <div class="nav-links">
+        <a href="agent.html" class="btn-outline">👤 Agent Portal</a>
+        <a href="index.html" class="btn-gold">🌐 View Public Site</a>
+    </div>
+</div>
 
-    <!-- LOGIN SCREEN -->
-    <div id="loginScreen" class="login-screen">
-        <div class="login-card">
-            <div style="text-align:center;margin-bottom:16px;">
-                <img src="alexandra-logo.png" alt="Logo" style="width:80px;height:80px;object-fit:contain;border-radius:12px;background:#f1f5f9;padding:8px;">
-            </div>
-            <h1>🔐 Vusani Ikhaya Admin</h1>
-            <p>Enter your admin password to manage properties.</p>
-            <input type="password" id="adminPassword" placeholder="Enter admin password" autofocus>
-            <button class="btn btn-primary" onclick="adminLogin()">Log In</button>
-            <div class="login-error" id="loginError">Incorrect password. Please try again.</div>
+<!-- LOGIN SCREEN -->
+<div id="loginScreen" class="login-screen">
+    <div class="login-card">
+        <div class="login-logo">
+            <img src="alexandra-logo.png" alt="Vusani Ikhaya Properties">
+            <h2>Admin Login</h2>
+        </div>
+        <p class="subtitle">
+            Log in to approve new room posts, decline posts, remove<br>
+            public rooms, and repost removed rooms.
+        </p>
+        <label for="adminPassword">Password</label>
+        <input type="password" id="adminPassword" placeholder="Enter admin password" autofocus>
+        <button class="btn" onclick="adminLogin()">Log In</button>
+        <p class="hint">Use the admin password provided by Vusani Ikhaya Properties.</p>
+        <div class="login-error" id="loginError">Incorrect password. Please try again.</div>
+    </div>
+</div>
+
+<!-- DASHBOARD (hidden until login) -->
+<div id="dashboard" class="dashboard">
+    <div class="header">
+        <h2>🏠 Admin Dashboard</h2>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+            <span id="backendStatus" class="status status-offline">🔴 Offline</span>
+            <button class="btn btn-secondary btn-sm" onclick="refreshAdmin()">🔄 Refresh</button>
+            <button class="btn btn-danger btn-sm" onclick="adminLogout()">🚪 Log Out</button>
         </div>
     </div>
 
-    <!-- DASHBOARD -->
-    <div id="dashboard" class="hidden">
-        <!-- HEADER -->
-        <div class="header">
-            <div class="brand">
-                <img src="alexandra-logo.png" alt="Vusani Ikhaya Properties">
-                <div>
-                    <h1>🏠 VUSANI IKHAYA PROPERTIES</h1>
-                    <span>Admin Dashboard • Trusted rooms. Real people. Real value.</span>
-                </div>
-            </div>
-            <div class="header-actions">
-                <span id="backendStatus" class="status-offline">🔴 Offline</span>
-                <a href="index.html" class="btn btn-outline btn-sm">🌐 Go to Website</a>
-                <button class="btn btn-secondary btn-sm" onclick="refreshAdmin()">🔄 Refresh</button>
-                <button class="btn btn-danger btn-sm" onclick="adminLogout()">🚪 Log Out</button>
-            </div>
+    <div class="stats-grid" id="statsRow">
+        <div class="stat"><span>📋 Pending</span><strong id="statPending">0</strong></div>
+        <div class="stat"><span>✅ Approved</span><strong id="statApproved">0</strong></div>
+        <div class="stat"><span>🏠 Taken</span><strong id="statTaken">0</strong></div>
+        <div class="stat"><span>❌ Declined</span><strong id="statDeclined">0</strong></div>
+        <div class="stat"><span>🗑️ Removed</span><strong id="statRemoved">0</strong></div>
+        <div class="stat"><span>⭐ Reviews</span><strong id="statReviews">0</strong></div>
+    </div>
+
+    <div class="panel">
+        <div class="tabs" id="tabContainer">
+            <button class="tab active" data-view="pending">📋 Pending</button>
+            <button class="tab" data-view="approved">✅ Approved</button>
+            <button class="tab" data-view="taken">🏠 Taken</button>
+            <button class="tab" data-view="declined">❌ Declined</button>
+            <button class="tab" data-view="removed">🗑️ Removed</button>
+            <button class="tab" data-view="reviews">⭐ Reviews</button>
+            <button class="tab" data-view="agents">👤 Agents</button>
+            <button class="tab" data-view="receipts">🧾 Receipts</button>
+            <button class="tab" data-view="monthly">📊 Monthly</button>
         </div>
 
-        <!-- STATS -->
-        <div class="stats-grid" id="statsRow">
-            <div class="stat"><span>📋 Pending</span><strong id="statPending">0</strong></div>
-            <div class="stat"><span>✅ Approved</span><strong id="statApproved">0</strong></div>
-            <div class="stat"><span>🏠 Taken</span><strong id="statTaken">0</strong></div>
-            <div class="stat"><span>❌ Declined</span><strong id="statDeclined">0</strong></div>
-            <div class="stat"><span>🗑️ Removed</span><strong id="statRemoved">0</strong></div>
-            <div class="stat"><span>⭐ Reviews</span><strong id="statReviews">0</strong></div>
-        </div>
-
-        <!-- MAIN PANEL -->
-        <div class="panel">
-            <div class="tabs" id="tabContainer">
-                <button class="tab active" data-view="pending">📋 Pending</button>
-                <button class="tab" data-view="approved">✅ Approved</button>
-                <button class="tab" data-view="taken">🏠 Taken</button>
-                <button class="tab" data-view="declined">❌ Declined</button>
-                <button class="tab" data-view="removed">🗑️ Removed</button>
-                <button class="tab" data-view="reviews-pending">⭐ Reviews</button>
-                <button class="tab" data-view="agents">👤 Agents</button>
-                <button class="tab" data-view="receipts">🧾 Receipts</button>
-                <button class="tab" data-view="monthly">📊 Monthly</button>
-            </div>
-
-            <div id="contentArea">
-                <div class="table-wrap">
-                    <table>
-                        <thead id="tableHead">
-                            <tr>
-                                <th>Status</th>
-                                <th>Title / Name</th>
-                                <th>Location</th>
-                                <th>Details</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tableBody">
-                            <tr><td colspan="5" class="empty-state">Login to load data.</td></tr>
-                        </tbody>
-                    </table>
-                </div>
+        <div id="contentArea">
+            <div class="table-wrap">
+                <table>
+                    <thead id="tableHead">
+                        <tr><th>Status</th><th>Title</th><th>Location</th><th>Details</th><th>Actions</th></tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <tr><td colspan="5" class="empty-state">Login to load data.</td></tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 </div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
 
 <!-- MODAL -->
 <div class="modal-overlay" id="modalOverlay">
@@ -335,9 +471,6 @@
         <div id="modalContent"></div>
     </div>
 </div>
-
-<!-- TOAST -->
-<div class="toast" id="toast"></div>
 
 <script>
 // ============================================================
@@ -452,14 +585,14 @@ document.getElementById('adminPassword').addEventListener('keypress', function(e
 //  SHOW SCREENS
 // ============================================================
 function showLogin() {
-    document.getElementById('loginScreen').style.display = 'grid';
-    document.getElementById('dashboard').classList.add('hidden');
+    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('dashboard').style.display = 'none';
     document.getElementById('adminPassword').value = '';
 }
 
 function showDashboard() {
     document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('dashboard').classList.remove('hidden');
+    document.getElementById('dashboard').style.display = 'block';
 }
 
 // ============================================================
@@ -471,13 +604,12 @@ async function refreshAdmin() {
         db = data;
         updateStats();
         renderTable(currentView);
-        updateMonthlyReport();
         document.getElementById('backendStatus').textContent = '🟢 Online';
-        document.getElementById('backendStatus').className = 'status-online';
+        document.getElementById('backendStatus').className = 'status status-online';
         showToast('✅ Data refreshed!');
     } catch (error) {
         document.getElementById('backendStatus').textContent = '🔴 Offline';
-        document.getElementById('backendStatus').className = 'status-offline';
+        document.getElementById('backendStatus').className = 'status status-offline';
         showToast(error.message || 'Failed to load data', 'error');
     }
 }
@@ -496,31 +628,6 @@ function updateStats() {
 }
 
 // ============================================================
-//  UPDATE MONTHLY REPORT
-// ============================================================
-function updateMonthlyReport() {
-    if (!db) return;
-    const currentMonth = new Date().toISOString().slice(0, 7);
-    const takenRooms = db.rooms?.taken || [];
-    const approvedRooms = db.rooms?.approved || [];
-
-    let monthlyFees = 0, totalFees = 0, potentialRevenue = 0;
-    takenRooms.forEach(room => {
-        const fee = room.receipt?.serviceFee || 0;
-        totalFees += fee;
-        if (room.takenAt && room.takenAt.slice(0, 7) === currentMonth) monthlyFees += fee;
-    });
-    approvedRooms.forEach(room => {
-        const amount = parseFloat(room.amount) || 0;
-        if (amount >= 800 && amount <= 1500) potentialRevenue += 200;
-        else if (amount >= 1600 && amount <= 2000) potentialRevenue += 250;
-        else if (amount >= 2100 && amount <= 3000) potentialRevenue += 300;
-        else if (amount >= 3100 && amount <= 5000) potentialRevenue += 400;
-    });
-    const takenThisMonth = takenRooms.filter(r => r.takenAt && r.takenAt.slice(0, 7) === currentMonth).length;
-}
-
-// ============================================================
 //  RENDER TABLE
 // ============================================================
 function renderTable(view) {
@@ -529,36 +636,20 @@ function renderTable(view) {
     const thead = document.getElementById('tableHead');
 
     let items = [];
-    let section = 'rooms';
-    let status = view;
-    let headers = ['Status', 'Title / Name', 'Location', 'Details', 'Actions'];
+    let headers = ['Status', 'Title', 'Location', 'Details', 'Actions'];
 
-    // Parse view
-    if (view === 'reviews-pending') { section = 'reviews'; status = 'pending'; }
-    else if (view === 'agents') { section = 'agents'; status = 'accounts'; }
-    else if (view === 'receipts') { section = 'receipts'; status = ''; }
-    else if (view === 'monthly') { section = 'monthly'; status = ''; }
-    else { section = 'rooms'; status = view; }
-
-    // Get items
-    if (section === 'rooms') {
-        items = db?.rooms?.[status] || [];
-        headers = ['Status', 'Title', 'Location', 'Details', 'Actions'];
-    } else if (section === 'reviews') {
-        items = db?.reviews?.[status] || [];
-        headers = ['Status', 'Room', 'Reviewer', 'Rating', 'Actions'];
-    } else if (section === 'agents') {
-        items = db?.agents?.accounts || [];
-        headers = ['Status', 'Username', 'Full Name', 'Phone', 'Actions'];
-    } else if (section === 'receipts') {
-        items = db?.receipts || [];
-        headers = ['Date', 'Tenant', 'Room', 'Amount', 'Actions'];
-    } else {
-        items = [];
-    }
+    if (view === 'pending') items = db?.rooms?.pending || [];
+    else if (view === 'approved') items = db?.rooms?.approved || [];
+    else if (view === 'taken') items = db?.rooms?.taken || [];
+    else if (view === 'declined') items = db?.rooms?.declined || [];
+    else if (view === 'removed') items = db?.rooms?.removed || [];
+    else if (view === 'reviews') items = db?.reviews?.pending || [];
+    else if (view === 'agents') items = db?.agents?.accounts || [];
+    else if (view === 'receipts') items = db?.receipts || [];
+    else items = [];
 
     if (!items || items.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="${headers.length}" class="empty-state">No items in ${view.replace(/-/g, ' ')}.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" class="empty-state">No items in ${view}.</td></tr>`;
         thead.innerHTML = `<tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>`;
         return;
     }
@@ -567,51 +658,22 @@ function renderTable(view) {
 
     let html = '';
     items.forEach(item => {
-        const statusLabel = item.status || status || 'pending';
-        const badgeClass = getBadgeClass(statusLabel);
-        const actions = getActions(section, status, item.id, statusLabel);
+        const status = item.status || view || 'pending';
+        const badgeClass = getBadgeClass(status);
+        let actions = getActions(view, item.id, status);
 
-        if (section === 'rooms') {
-            html += `<tr>
-                <td><span class="badge ${badgeClass}">${statusLabel.charAt(0).toUpperCase() + statusLabel.slice(1)}</span></td>
-                <td><strong>${item.title || item.type || 'N/A'}</strong></td>
-                <td>${item.location || item.address || 'N/A'}</td>
-                <td>Rent: ${item.amount || 'N/A'}<br>Contact: ${item.posterContact || 'N/A'}</td>
-                <td>${actions}</td>
-            </tr>`;
-        } else if (section === 'reviews') {
-            html += `<tr>
-                <td><span class="badge ${badgeClass}">${statusLabel}</span></td>
-                <td>${item.roomTitle || item.roomId || 'N/A'}</td>
-                <td>${item.name || 'Anonymous'}</td>
-                <td>⭐ ${item.rating || 0}/5</td>
-                <td>${actions}</td>
-            </tr>`;
-        } else if (section === 'agents') {
-            html += `<tr>
-                <td><span class="badge ${item.status === 'Suspended' ? 'badge-suspended' : 'badge-active'}">${item.status || 'Active'}</span></td>
-                <td><strong>${item.username || 'N/A'}</strong></td>
-                <td>${item.fullName || 'N/A'}</td>
-                <td>${item.phone || 'N/A'}</td>
-                <td>${actions}</td>
-            </tr>`;
-        } else if (section === 'receipts') {
-            html += `<tr>
-                <td>${item.date || 'N/A'}</td>
-                <td>${item.tenantName || 'N/A'}</td>
-                <td>${item.roomAddress || 'N/A'}</td>
-                <td>R${item.rentAmount || 0}</td>
-                <td><button class="btn btn-primary btn-xs" onclick="viewReceipt('${item.id}')">📄 View</button></td>
-            </tr>`;
-        }
+        html += `<tr>
+            <td><span class="badge ${badgeClass}">${status.charAt(0).toUpperCase() + status.slice(1)}</span></td>
+            <td><strong>${item.title || item.username || item.type || 'N/A'}</strong></td>
+            <td>${item.location || item.address || item.roomAddress || item.fullName || 'N/A'}</td>
+            <td>${item.amount ? 'R' + item.amount : ''} ${item.phone ? '📞' + item.phone : ''}</td>
+            <td>${actions}</td>
+        </tr>`;
     });
 
     tbody.innerHTML = html;
 }
 
-// ============================================================
-//  HELPER FUNCTIONS
-// ============================================================
 function getBadgeClass(status) {
     const map = {
         'pending': 'badge-pending',
@@ -623,27 +685,18 @@ function getBadgeClass(status) {
     return map[status.toLowerCase()] || 'badge-pending';
 }
 
-function getActions(section, status, id, currentStatus) {
+function getActions(view, id, status) {
     let actions = '';
-    if (section === 'rooms') {
-        if (currentStatus === 'pending') {
-            actions += `<button class="btn btn-success btn-xs" onclick="adminAction('${id}','rooms','pending','approved')">✅ Approve</button>`;
-            actions += `<button class="btn btn-danger btn-xs" onclick="adminAction('${id}','rooms','pending','declined')">❌ Decline</button>`;
-        }
-        if (currentStatus === 'approved') {
-            actions += `<button class="btn btn-warning btn-xs" onclick="adminAction('${id}','rooms','approved','taken')">🏠 Taken</button>`;
-        }
-        actions += `<button class="btn btn-danger btn-xs" onclick="adminDelete('${id}','rooms','${currentStatus}')">✕</button>`;
-    } else if (section === 'reviews') {
-        if (currentStatus === 'pending') {
-            actions += `<button class="btn btn-success btn-xs" onclick="adminAction('${id}','reviews','pending','approved')">✅ Approve</button>`;
-            actions += `<button class="btn btn-danger btn-xs" onclick="adminAction('${id}','reviews','pending','declined')">❌ Decline</button>`;
-        }
-        actions += `<button class="btn btn-danger btn-xs" onclick="adminDelete('${id}','reviews','${currentStatus}')">✕</button>`;
-    } else if (section === 'agents') {
-        actions += `<button class="btn btn-warning btn-xs" onclick="editAgent('${id}')">✏️ Edit</button>`;
-        actions += `<button class="btn btn-danger btn-xs" onclick="adminDelete('${id}','agents','accounts')">✕</button>`;
+    if (view === 'pending') {
+        actions += `<button class="btn btn-success btn-xs" onclick="adminAction('${id}','rooms','pending','approved')">✅ Approve</button>`;
+        actions += `<button class="btn btn-danger btn-xs" onclick="adminAction('${id}','rooms','pending','declined')">❌ Decline</button>`;
+    } else if (view === 'approved') {
+        actions += `<button class="btn btn-warning btn-xs" onclick="adminAction('${id}','rooms','approved','taken')">🏠 Taken</button>`;
+        actions += `<button class="btn btn-danger btn-xs" onclick="adminAction('${id}','rooms','approved','declined')">❌ Decline</button>`;
+    } else if (view === 'taken') {
+        actions += `<button class="btn btn-danger btn-xs" onclick="adminAction('${id}','rooms','taken','removed')">🗑️ Remove</button>`;
     }
+    actions += `<button class="btn btn-danger btn-xs" onclick="adminDelete('${id}','rooms','${status}')">✕</button>`;
     return actions;
 }
 
@@ -678,62 +731,6 @@ async function adminDelete(id, section, status) {
     }
 }
 
-function editAgent(id) {
-    const agent = db?.agents?.accounts?.find(a => a.id === id);
-    if (!agent) return;
-    const content = `
-        <h2>✏️ Edit Agent</h2>
-        <div class="form-group"><label>Username</label><input id="editUsername" value="${agent.username || ''}"></div>
-        <div class="form-group"><label>Full Name</label><input id="editFullName" value="${agent.fullName || ''}"></div>
-        <div class="form-group"><label>Phone</label><input id="editPhone" value="${agent.phone || ''}"></div>
-        <div class="form-group"><label>Status</label>
-            <select id="editStatus">
-                <option value="Active" ${agent.status === 'Active' ? 'selected' : ''}>Active</option>
-                <option value="Suspended" ${agent.status === 'Suspended' ? 'selected' : ''}>Suspended</option>
-            </select>
-        </div>
-        <button class="btn btn-primary" onclick="saveAgent('${id}')">💾 Save</button>
-        <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
-    `;
-    openModal(content);
-}
-
-async function saveAgent(id) {
-    const username = document.getElementById('editUsername').value.trim();
-    const fullName = document.getElementById('editFullName').value.trim();
-    const phone = document.getElementById('editPhone').value.trim();
-    const status = document.getElementById('editStatus').value;
-    try {
-        await apiCall('/api/admin/action', {
-            method: 'POST',
-            body: JSON.stringify({
-                action: 'save-agent-account',
-                agent: { id, username, fullName, phone, status, password: 'Temp1234!' }
-            })
-        });
-        closeModal();
-        await refreshAdmin();
-        showToast('✅ Agent updated!');
-    } catch (error) {
-        showToast(error.message || 'Save failed', 'error');
-    }
-}
-
-function viewReceipt(id) {
-    const receipt = db?.receipts?.find(r => r.id === id);
-    if (!receipt) return;
-    const content = `
-        <h2>🧾 Receipt</h2>
-        <p><strong>Date:</strong> ${receipt.date || 'N/A'}</p>
-        <p><strong>Tenant:</strong> ${receipt.tenantName || 'N/A'}</p>
-        <p><strong>Room:</strong> ${receipt.roomAddress || 'N/A'}</p>
-        <p><strong>Rent:</strong> R${receipt.rentAmount || 0}</p>
-        <p><strong>Service Fee:</strong> R${receipt.serviceFee || 0}</p>
-        <button class="btn btn-secondary" onclick="closeModal()">Close</button>
-    `;
-    openModal(content);
-}
-
 // ============================================================
 //  TAB CLICK
 // ============================================================
@@ -756,7 +753,6 @@ setInterval(() => {
 //  INIT
 // ============================================================
 console.log('🚀 Vusani Ikhaya Admin Panel');
-console.log('📡 Backend URL:', window.BACKEND_URL || 'https://vusani-ikhaya-backend.onrender.com');
 console.log('🔑 Password: Av98012@12');
 
 if (!window.BACKEND_URL) {
