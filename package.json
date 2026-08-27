@@ -1,8 +1,15 @@
 {
-  "name": "vusani-ikhaya-properties",
+  "name": "vusani-ikhaya-backend",
   "version": "1.0.0",
-  "private": true,
+  "description": "Vusani Ikhaya Backend API",
+  "main": "server.js",
   "scripts": {
     "start": "node server.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.38.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
   }
 }
