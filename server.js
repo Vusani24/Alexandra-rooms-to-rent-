@@ -2,18 +2,31 @@ const http = require("http");
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
+const { createClient } = require('@supabase/supabase-js');
 
+// ============================================================
+//  SUPABASE CONFIGURATION
+// ============================================================
+const SUPABASE_URL = process.env.SUPABASE_URL || 'https://kyvbpxrybonwnigjevlv.supabase.co';
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt5dmJweHJ5Ym9ud25pZ2pldmx2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4Nzc0MDgzOSwiZXhwIjoyMTAzMzE2ODM5fQ.8fX9Zk7QpVlFw9RmVbQc0fj-d18dBkYF8XnnW_2LJiY';
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+// ============================================================
+//  CONSTANTS
+// ============================================================
 const PORT = Number(process.env.PORT || 3000);
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "Av98012@12";
 const ROOT = __dirname;
-const DATA_DIR = process.env.VERCEL ? path.join("/tmp", "vusani-ikhaya-data") : path.join(ROOT, "database");
-const DB_FILE = path.join(DATA_DIR, "db.json");
-const SEED_DB_FILE = path.join(ROOT, "database", "db.json");
-const sessions = new Set();
-const agentSessions = new Map();
 const AGENT_PLACEMENT_COMMISSION = 100;
 const AGENT_ONLINE_TIMEOUT_MS = 5 * 60 * 1000;
 
+const sessions = new Set();
+const agentSessions = new Map();
+
+// ============================================================
+//  DEFAULT DATABASE STRUCTURE
+// ============================================================
 const defaultDB = {
   rooms: { pending: [], approved: [], taken: [], declined: [], removed: [] },
   reviews: { pending: [], approved: [], declined: [] },
@@ -22,6 +35,60 @@ const defaultDB = {
   agents: { accounts: [], profiles: [], landlords: [], reports: [], leads: [], viewings: [], support: [] },
   receipts: []
 };
+
+// ============================================================
+//  DATABASE FUNCTIONS (Supabase - PERSISTENT!)
+// ============================================================
+
+async function readDB() {
+  try {
+    const { data, error } = await supabase
+      .from('app_data')
+      .select('data')
+      .eq('id', 'main_data')
+      .single();
+    
+    if (error) {
+      if (error.code === 'PGRST116') {
+        // No data yet - create default
+        console.log('📝 No data in Supabase, creating default...');
+        await writeDB(defaultDB);
+        return JSON.parse(JSON.stringify(defaultDB));
+      }
+      console.error('❌ Read error:', error);
+      return JSON.parse(JSON.stringify(defaultDB));
+    }
+    
+    return data?.data || JSON.parse(JSON.stringify(defaultDB));
+  } catch (e) {
+    console.error('❌ readDB error:', e);
+    return JSON.parse(JSON.stringify(defaultDB));
+  }
+}
+
+async function writeDB(db) {
+  try {
+    const { error } = await supabase
+      .from('app_data')
+      .upsert({
+        id: 'main_data',
+        data: db,
+        updated_at: new Date().toISOString()
+      });
+    
+    if (error) {
+      console.error('❌ Write error:', error);
+    } else {
+      console.log('💾 Data saved to Supabase');
+    }
+  } catch (e) {
+    console.error('❌ writeDB error:', e);
+  }
+}
+
+// ============================================================
+//  HELPER FUNCTIONS
+// ============================================================
 
 function normalizeSection(section, defaults) {
   const source = section && typeof section === "object" && !Array.isArray(section) ? section : {};
@@ -49,34 +116,6 @@ function normalizeDB(db) {
   db.agents.support = Array.isArray(db.agents.support) ? db.agents.support : [];
   db.receipts = Array.isArray(db.receipts) ? db.receipts : [];
   return db;
-}
-
-function ensureDB() {
-  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
-  if (!fs.existsSync(DB_FILE)) {
-    if (fs.existsSync(SEED_DB_FILE)) {
-      fs.copyFileSync(SEED_DB_FILE, DB_FILE);
-    } else {
-      writeDB(defaultDB);
-    }
-  }
-}
-
-function readDB() {
-  ensureDB();
-  let parsed;
-  try {
-    const raw = fs.readFileSync(DB_FILE, "utf8").replace(/^\uFEFF/, "");
-    parsed = raw.trim() ? JSON.parse(raw) : defaultDB;
-  } catch {
-    parsed = defaultDB;
-  }
-  return normalizeDB(parsed);
-}
-
-function writeDB(db) {
-  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
-  fs.writeFileSync(DB_FILE, JSON.stringify(normalizeDB(db), null, 2));
 }
 
 function send(res, status, body, type = "application/json") {
@@ -280,12 +319,6 @@ function requireAgent(req, res) {
   const now = new Date().toISOString();
   account.lastActiveAt = now;
   agentSessions.set(token, account);
-  const db = readDB();
-  const stored = db.agents.accounts.find((entry) => entry.id === account.id);
-  if (stored) {
-    stored.lastActiveAt = now;
-    writeDB(db);
-  }
   return account;
 }
 
@@ -346,8 +379,16 @@ function deleteItem(db, section, from, id) {
   db[section][from] = db[section][from].filter((entry) => entry.id !== id);
 }
 
+// ============================================================
+//  API HANDLER
+// ============================================================
+
 async function api(req, res, url) {
-  const db = readDB();
+  const db = await readDB();
+
+  // ============================================================
+  //  PUBLIC ENDPOINTS
+  // ============================================================
 
   if (req.method === "GET" && url.pathname.startsWith("/api/room-image/")) {
     const [, , , id, indexText] = url.pathname.split("/");
@@ -379,6 +420,10 @@ async function api(req, res, url) {
     return;
   }
 
+  // ============================================================
+  //  PUBLIC SUBMISSIONS
+  // ============================================================
+
   if (req.method === "POST" && url.pathname === "/api/rooms") {
     const body = await readBody(req);
     db.rooms.pending.unshift({
@@ -401,10 +446,67 @@ async function api(req, res, url) {
       status: "pending",
       createdAt: new Date().toISOString()
     });
-    writeDB(db);
+    await writeDB(db);
     send(res, 201, { ok: true });
     return;
   }
+
+  if (req.method === "POST" && url.pathname === "/api/reviews") {
+    const body = await readBody(req);
+    db.reviews.pending.unshift({
+      id: "review-" + Date.now(),
+      roomId: cleanText(body.roomId, 80),
+      roomTitle: cleanText(body.roomTitle, 140),
+      name: cleanText(body.name, 100),
+      rating: Math.max(1, Math.min(5, Number(body.rating) || 5)),
+      comment: cleanText(body.comment, 800),
+      status: "pending",
+      createdAt: new Date().toISOString()
+    });
+    await writeDB(db);
+    send(res, 201, { ok: true });
+    return;
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/reports") {
+    const body = await readBody(req);
+    db.reports.pending.unshift({
+      id: "report-" + Date.now(),
+      room: cleanText(body.room, 180),
+      reporterContact: cleanText(body.reporterContact, 160),
+      reason: cleanText(body.reason, 1000),
+      status: "pending",
+      createdAt: new Date().toISOString()
+    });
+    await writeDB(db);
+    send(res, 201, { ok: true });
+    return;
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/transports") {
+    const body = await readBody(req);
+    db.transports.pending.unshift({
+      id: "transport-" + Date.now(),
+      firstName: cleanText(body.firstName, 100),
+      surname: cleanText(body.surname, 100),
+      phone: cleanText(body.phone, 80),
+      email: cleanText(body.email, 160),
+      carPicture: cleanImages([body.carPicture])[0] || "",
+      idPicture: cleanImages([body.idPicture])[0] || "",
+      localPrice: cleanText(body.localPrice, 80),
+      outsidePrice: cleanText(body.outsidePrice, 80),
+      notes: cleanText(body.notes, 800),
+      status: "pending",
+      createdAt: new Date().toISOString()
+    });
+    await writeDB(db);
+    send(res, 201, { ok: true });
+    return;
+  }
+
+  // ============================================================
+  //  AGENT LOGIN
+  // ============================================================
 
   if (req.method === "POST" && url.pathname === "/api/agent/login") {
     const body = await readBody(req);
@@ -416,7 +518,7 @@ async function api(req, res, url) {
     const now = new Date().toISOString();
     account.lastLoginAt = now;
     account.lastActiveAt = now;
-    writeDB(db);
+    await writeDB(db);
     const safeAccount = {
       id: account.id,
       fullName: account.fullName,
@@ -433,6 +535,10 @@ async function api(req, res, url) {
     send(res, 200, { token, agent: safeAccount });
     return;
   }
+
+  // ============================================================
+  //  AGENT ENDPOINTS
+  // ============================================================
 
   if (req.method === "GET" && url.pathname === "/api/agent/summary") {
     const account = requireAgent(req, res);
@@ -478,7 +584,7 @@ async function api(req, res, url) {
     if (!saved || saved.password !== currentPassword) return send(res, 401, { error: "Current password is incorrect" });
     saved.password = newPassword;
     saved.updatedAt = new Date().toISOString();
-    writeDB(db);
+    await writeDB(db);
     send(res, 200, { ok: true });
     return;
   }
@@ -531,7 +637,7 @@ async function api(req, res, url) {
       status: "pending",
       createdAt: new Date().toISOString()
     });
-    writeDB(db);
+    await writeDB(db);
     send(res, 201, { ok: true, message: "Property sent to admin pending review" });
     return;
   }
@@ -549,7 +655,7 @@ async function api(req, res, url) {
     }, existing || {});
     db.agents.profiles = db.agents.profiles.filter((entry) => entry.id !== saved.id && entry.agentId !== account.id);
     db.agents.profiles.unshift(saved);
-    writeDB(db);
+    await writeDB(db);
     send(res, 201, { ok: true });
     return;
   }
@@ -572,7 +678,7 @@ async function api(req, res, url) {
       documents: cleanFiles(body.documents, 6),
       createdAt: new Date().toISOString()
     });
-    writeDB(db);
+    await writeDB(db);
     send(res, 201, { ok: true });
     return;
   }
@@ -596,7 +702,7 @@ async function api(req, res, url) {
       status: cleanText(body.status || "New", 40),
       createdAt: new Date().toISOString()
     });
-    writeDB(db);
+    await writeDB(db);
     send(res, 201, { ok: true });
     return;
   }
@@ -619,7 +725,7 @@ async function api(req, res, url) {
       notes: cleanText(body.notes, 800),
       createdAt: new Date().toISOString()
     });
-    writeDB(db);
+    await writeDB(db);
     send(res, 201, { ok: true });
     return;
   }
@@ -642,7 +748,7 @@ async function api(req, res, url) {
       plans: cleanText(body.plans, 1000),
       createdAt: new Date().toISOString()
     });
-    writeDB(db);
+    await writeDB(db);
     send(res, 201, { ok: true });
     return;
   }
@@ -661,63 +767,14 @@ async function api(req, res, url) {
       status: "Open",
       createdAt: new Date().toISOString()
     });
-    writeDB(db);
+    await writeDB(db);
     send(res, 201, { ok: true });
     return;
   }
 
-  if (req.method === "POST" && url.pathname === "/api/reviews") {
-    const body = await readBody(req);
-    db.reviews.pending.unshift({
-      id: "review-" + Date.now(),
-      roomId: cleanText(body.roomId, 80),
-      roomTitle: cleanText(body.roomTitle, 140),
-      name: cleanText(body.name, 100),
-      rating: Math.max(1, Math.min(5, Number(body.rating) || 5)),
-      comment: cleanText(body.comment, 800),
-      status: "pending",
-      createdAt: new Date().toISOString()
-    });
-    writeDB(db);
-    send(res, 201, { ok: true });
-    return;
-  }
-
-  if (req.method === "POST" && url.pathname === "/api/reports") {
-    const body = await readBody(req);
-    db.reports.pending.unshift({
-      id: "report-" + Date.now(),
-      room: cleanText(body.room, 180),
-      reporterContact: cleanText(body.reporterContact, 160),
-      reason: cleanText(body.reason, 1000),
-      status: "pending",
-      createdAt: new Date().toISOString()
-    });
-    writeDB(db);
-    send(res, 201, { ok: true });
-    return;
-  }
-
-  if (req.method === "POST" && url.pathname === "/api/transports") {
-    const body = await readBody(req);
-    db.transports.pending.unshift({
-      id: "transport-" + Date.now(),
-      firstName: cleanText(body.firstName, 100),
-      surname: cleanText(body.surname, 100),
-      phone: cleanText(body.phone, 80),
-      email: cleanText(body.email, 160),
-      carPicture: cleanImages([body.carPicture])[0] || "",
-      idPicture: cleanImages([body.idPicture])[0] || "",
-      localPrice: cleanText(body.localPrice, 80),
-      outsidePrice: cleanText(body.outsidePrice, 80),
-      notes: cleanText(body.notes, 800),
-      status: "pending",
-      createdAt: new Date().toISOString()
-    });
-    writeDB(db);
-    send(res, 201, { ok: true });
-    return;
-  }
+  // ============================================================
+  //  ADMIN LOGIN
+  // ============================================================
 
   if (req.method === "POST" && url.pathname === "/api/admin/login") {
     const body = await readBody(req);
@@ -727,6 +784,10 @@ async function api(req, res, url) {
     send(res, 200, { token });
     return;
   }
+
+  // ============================================================
+  //  ADMIN ENDPOINTS
+  // ============================================================
 
   if (url.pathname.startsWith("/api/admin/")) {
     const token = requireAdmin(req, res, url);
@@ -744,6 +805,7 @@ async function api(req, res, url) {
 
     if (req.method === "POST" && url.pathname === "/api/admin/action") {
       const body = await readBody(req);
+
       if (body.action === "save-agent-account") {
         const agent = body.agent || {};
         const username = cleanUsername(agent.username);
@@ -767,9 +829,11 @@ async function api(req, res, url) {
         db.agents.accounts = db.agents.accounts.filter((entry) => entry.id !== saved.id && cleanUsername(entry.username) !== username);
         db.agents.accounts.unshift(saved);
       }
+
       if (body.action === "delete-agent-account") {
         db.agents.accounts = db.agents.accounts.filter((entry) => entry.id !== body.id);
       }
+
       if (body.action === "set-agent-status") {
         const account = db.agents.accounts.find((entry) => entry.id === body.id);
         if (account) {
@@ -777,6 +841,7 @@ async function api(req, res, url) {
           account.updatedAt = new Date().toISOString();
         }
       }
+
       if (body.action === "reset-agent-password") {
         const account = db.agents.accounts.find((entry) => entry.id === body.id);
         const password = cleanText(body.password, 120);
@@ -786,6 +851,7 @@ async function api(req, res, url) {
           account.updatedAt = new Date().toISOString();
         }
       }
+
       if (body.action === "save-agent-profile") {
         const profile = body.profile || {};
         const existing = db.agents.profiles.find((entry) => entry.id === profile.id);
@@ -793,9 +859,11 @@ async function api(req, res, url) {
         db.agents.profiles = db.agents.profiles.filter((entry) => entry.id !== saved.id);
         db.agents.profiles.unshift(saved);
       }
+
       if (body.action === "delete-agent-profile") {
         db.agents.profiles = db.agents.profiles.filter((entry) => entry.id !== body.id);
       }
+
       if (body.action === "assign-agent") {
         const { room } = findRoomRecord(db, body.id);
         const agent = db.agents.accounts.find((entry) => entry.id === body.agentId);
@@ -806,6 +874,7 @@ async function api(req, res, url) {
         room.assignedAgentName = agent.fullName || agent.username;
         room.assignedAt = new Date().toISOString();
       }
+
       if (body.action === "book-viewing") {
         const { room } = findRoomRecord(db, body.roomId);
         const details = body.viewing || {};
@@ -831,7 +900,9 @@ async function api(req, res, url) {
           createdAt: new Date().toISOString()
         });
       }
+
       if (body.action === "move") moveItem(db, body.section, body.from, body.to, body.id);
+
       if (body.action === "mark-taken") {
         const room = db.rooms.approved.find((entry) => entry.id === body.id);
         if (room) {
@@ -862,6 +933,7 @@ async function api(req, res, url) {
           db.receipts.unshift({ ...receipt, roomId: room.id, manual: false, agentId: leasedAgentId, agentName: leasedAgentName, agentCommission });
         }
       }
+
       if (body.action === "manual-receipt") {
         const receipt = cleanReceipt(body.receipt || {});
         const manualRoom = {
@@ -882,7 +954,9 @@ async function api(req, res, url) {
         db.rooms.taken.unshift(manualRoom);
         db.receipts.unshift({ ...receipt, roomId: manualRoom.id, manual: true });
       }
+
       if (body.action === "delete") deleteItem(db, body.section, body.from, body.id);
+
       if (body.action === "repost") {
         const section = db[body.section];
         const fromList = section && Array.isArray(section[body.from]) ? section[body.from] : [];
@@ -891,27 +965,33 @@ async function api(req, res, url) {
           section.pending.unshift({ ...item, id: "repost-" + Date.now(), status: "pending" });
         }
       }
+
       if (body.action === "remove-image") {
         const section = db[body.section];
         const fromList = section && Array.isArray(section[body.from]) ? section[body.from] : [];
         const room = fromList.find((entry) => entry.id === body.id);
         if (room) room.images = (room.images || []).filter((_, index) => index !== Number(body.index));
       }
+
       if (body.action === "remove-video") {
         const section = db[body.section];
         const fromList = section && Array.isArray(section[body.from]) ? section[body.from] : [];
         const room = fromList.find((entry) => entry.id === body.id);
         if (room) room.video = "";
       }
-      writeDB(db);
+
+      await writeDB(db);
       send(res, 200, { ok: true });
       return;
     }
-
   }
 
   send(res, 404, { error: "Not found" });
 }
+
+// ============================================================
+//  FILE SERVER
+// ============================================================
 
 function serveFile(req, res, url) {
   let pathname = decodeURIComponent(url.pathname);
@@ -926,6 +1006,10 @@ function serveFile(req, res, url) {
   send(res, 200, fs.readFileSync(file), type);
 }
 
+// ============================================================
+//  REQUEST HANDLER
+// ============================================================
+
 async function requestHandler(req, res) {
   try {
     const url = new URL(req.url, `http://${req.headers.host}`);
@@ -936,10 +1020,15 @@ async function requestHandler(req, res) {
   }
 }
 
-ensureDB();
+// ============================================================
+//  START SERVER
+// ============================================================
 
 if (require.main === module) {
-  http.createServer(requestHandler).listen(PORT, () => console.log(`VUSANI IKHAYA PROPERTIES running at http://localhost:${PORT}`));
+  http.createServer(requestHandler).listen(PORT, () => {
+    console.log(`🚀 VUSANI IKHAYA PROPERTIES running at http://localhost:${PORT}`);
+    console.log(`☁️ Using Supabase as primary storage`);
+  });
 }
 
 module.exports = requestHandler;
