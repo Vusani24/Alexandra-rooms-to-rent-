@@ -50,6 +50,7 @@
             display: flex;
             gap: 12px;
             align-items: center;
+            flex-wrap: wrap;
         }
         .topbar .nav-links a {
             color: white;
@@ -175,7 +176,7 @@
             display: none;
         }
         
-        /* DASHBOARD (hidden until login) */
+        /* DASHBOARD */
         .dashboard {
             display: none;
             padding: 20px 30px;
@@ -208,7 +209,7 @@
         .status-online { background: #d1fae5; color: #0b5e42; }
         .status-offline { background: #fee2e2; color: #991b1b; }
         
-        .dashboard .btn {
+        .btn {
             padding: 8px 18px;
             border: none;
             border-radius: 8px;
@@ -229,6 +230,8 @@
         .btn-secondary:hover { background: #cbd5e1; }
         .btn-success { background: #22c55e; color: white; }
         .btn-success:hover { background: #16a34a; }
+        .btn-warning { background: #f59e0b; color: #1e293b; }
+        .btn-warning:hover { background: #d97706; }
         .btn-sm { padding: 5px 12px; font-size: 12px; }
         .btn-xs { padding: 3px 8px; font-size: 11px; }
         
@@ -368,7 +371,7 @@
         @media (max-width: 768px) {
             .stats-grid { grid-template-columns: repeat(3, 1fr); }
             .topbar { flex-direction: column; text-align: center; padding: 16px; }
-            .topbar .nav-links { justify-content: center; flex-wrap: wrap; }
+            .topbar .nav-links { justify-content: center; }
             .login-card { padding: 30px 20px; }
             .dashboard { padding: 12px; }
         }
@@ -413,7 +416,7 @@
     </div>
 </div>
 
-<!-- DASHBOARD (hidden until login) -->
+<!-- DASHBOARD -->
 <div id="dashboard" class="dashboard">
     <div class="header">
         <h2>🏠 Admin Dashboard</h2>
@@ -440,10 +443,6 @@
             <button class="tab" data-view="taken">🏠 Taken</button>
             <button class="tab" data-view="declined">❌ Declined</button>
             <button class="tab" data-view="removed">🗑️ Removed</button>
-            <button class="tab" data-view="reviews">⭐ Reviews</button>
-            <button class="tab" data-view="agents">👤 Agents</button>
-            <button class="tab" data-view="receipts">🧾 Receipts</button>
-            <button class="tab" data-view="monthly">📊 Monthly</button>
         </div>
 
         <div id="contentArea">
@@ -479,6 +478,7 @@
 let token = localStorage.getItem('adminToken') || '';
 let currentView = 'pending';
 let db = null;
+const BACKEND_URL = window.BACKEND_URL || 'https://vusani-ikhaya-backend.onrender.com';
 
 // ============================================================
 //  TOAST
@@ -510,7 +510,6 @@ document.getElementById('modalOverlay').addEventListener('click', function(e) {
 //  API CALLS
 // ============================================================
 async function apiCall(endpoint, options = {}) {
-    const BACKEND_URL = window.BACKEND_URL || 'https://vusani-ikhaya-backend.onrender.com';
     const url = `${BACKEND_URL}${endpoint}`;
     const headers = {
         'Content-Type': 'application/json',
@@ -521,6 +520,7 @@ async function apiCall(endpoint, options = {}) {
     try {
         const response = await fetch(url, { ...options, headers });
         const data = await response.json();
+
         if (!response.ok) {
             if (response.status === 401) {
                 localStorage.removeItem('adminToken');
@@ -530,6 +530,7 @@ async function apiCall(endpoint, options = {}) {
             }
             throw new Error(data.error || data.message || 'Request failed');
         }
+
         return data;
     } catch (error) {
         console.error('❌ API Error:', error);
@@ -546,6 +547,7 @@ async function adminLogin() {
 
     try {
         errorEl.style.display = 'none';
+
         if (!password) {
             errorEl.textContent = 'Please enter your password.';
             errorEl.style.display = 'block';
@@ -643,9 +645,6 @@ function renderTable(view) {
     else if (view === 'taken') items = db?.rooms?.taken || [];
     else if (view === 'declined') items = db?.rooms?.declined || [];
     else if (view === 'removed') items = db?.rooms?.removed || [];
-    else if (view === 'reviews') items = db?.reviews?.pending || [];
-    else if (view === 'agents') items = db?.agents?.accounts || [];
-    else if (view === 'receipts') items = db?.receipts || [];
     else items = [];
 
     if (!items || items.length === 0) {
@@ -664,8 +663,8 @@ function renderTable(view) {
 
         html += `<tr>
             <td><span class="badge ${badgeClass}">${status.charAt(0).toUpperCase() + status.slice(1)}</span></td>
-            <td><strong>${item.title || item.username || item.type || 'N/A'}</strong></td>
-            <td>${item.location || item.address || item.roomAddress || item.fullName || 'N/A'}</td>
+            <td><strong>${item.title || item.type || 'N/A'}</strong></td>
+            <td>${item.location || item.address || 'N/A'}</td>
             <td>${item.amount ? 'R' + item.amount : ''} ${item.phone ? '📞' + item.phone : ''}</td>
             <td>${actions}</td>
         </tr>`;
@@ -753,11 +752,8 @@ setInterval(() => {
 //  INIT
 // ============================================================
 console.log('🚀 Vusani Ikhaya Admin Panel');
+console.log('📡 Backend URL:', BACKEND_URL);
 console.log('🔑 Password: Av98012@12');
-
-if (!window.BACKEND_URL) {
-    window.BACKEND_URL = 'https://vusani-ikhaya-backend.onrender.com';
-}
 
 if (token) {
     showDashboard();
