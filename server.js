@@ -387,6 +387,18 @@ async function api(req, res, url) {
   const db = await readDB();
 
   // ============================================================
+  //  HEALTH CHECK - ADDED!
+  // ============================================================
+  if (req.method === "GET" && url.pathname === "/api/health") {
+    send(res, 200, {
+      status: "ok",
+      message: "Server is running!",
+      timestamp: new Date().toISOString()
+    });
+    return;
+  }
+
+  // ============================================================
   //  PUBLIC ENDPOINTS
   // ============================================================
 
@@ -1007,11 +1019,22 @@ function serveFile(req, res, url) {
 }
 
 // ============================================================
-//  REQUEST HANDLER
+//  REQUEST HANDLER - WITH CORS!
 // ============================================================
 
 async function requestHandler(req, res) {
   try {
+    // CORS headers
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    
+    if (req.method === 'OPTIONS') {
+      res.writeHead(200);
+      res.end();
+      return;
+    }
+    
     const url = new URL(req.url, `http://${req.headers.host}`);
     if (url.pathname.startsWith("/api/")) return await api(req, res, url);
     serveFile(req, res, url);
@@ -1028,6 +1051,7 @@ if (require.main === module) {
   http.createServer(requestHandler).listen(PORT, () => {
     console.log(`🚀 VUSANI IKHAYA PROPERTIES running at http://localhost:${PORT}`);
     console.log(`☁️ Using Supabase as primary storage`);
+    console.log(`✅ Health check: http://localhost:${PORT}/api/health`);
   });
 }
 
